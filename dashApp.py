@@ -5,34 +5,70 @@ import pandas as pd
 
 sales_data = pd.read_csv('Pink Morsel.csv')
 
-#Before and after price increase
-sales_before_increase = sales_data[sales_data['Date'] < '2021-01-15']
-sales_after_increase = sales_data[sales_data['Date'] >= '2021-01-15']
-
-app = Dash(__name__)
-app.layout = html.Div([
-    html.H1("Sales Data Visualization"),
-    dcc.Dropdown(
-        id='dropdown',
-        options=[
-            {'label': 'Before Price Increase', 'value': 'before_increase'},
-            {'label': 'After Price Increase', 'value': 'after_increase'}
-        ],
-        value='before_increase'
-    ),
-    dcc.Graph(id='sales-chart')
-])
+app = Dash(__name__, external_stylesheets=['styles.css'])
+app.layout = html.Div(
+    style={'background-color': 'black', 
+           'height': '100vh', 
+           'width' : '100vw' ,
+           'font-family': 'monospace' ,
+           'display': 'flex', 
+           'flex-direction': 'column', 
+           'align-items': 'center', 
+           'justify-content': 'center'},  
+    children=[
+        html.H1("Sales Data Visualization", 
+                style={'color': '#4f08c2', 
+                       'font-size': '44px', 
+                       'font-family': 'monospace' ,
+                       'margin-bottom': '20px'}),
+        dcc.RadioItems(
+            id='region-radio',
+            options=[
+                {'label': 'North', 'value': 'north'}, 
+                {'label': 'East', 'value': 'east'},
+                {'label': 'South', 'value': 'south'}, 
+                {'label': 'West', 'value': 'west'}, 
+            ],
+            value='all',  # Default value
+            labelStyle={'display': 'inline-block', 'margin-right': '40px'},
+            style={'font-size': '20px', 
+                   'font-family': 'monospace' ,
+                   'margin-bottom': '14px', 
+                   'color': '#4f08c2'}
+        ),
+        dcc.Graph(
+            id='sales-chart',
+            style={'width' : '100vw' ,
+                   'font-family': 'monospace' }
+        )
+    ]
+)
 
 @app.callback(
     Output('sales-chart', 'figure'),
-    [Input('dropdown', 'value')]
+    [Input('region-radio', 'value')]
 )
 
-def update_chart(selected_value):
-    if selected_value == 'before_increase':
-        sales_fig = px.line(sales_before_increase, x='Date', y='Total Sale of Morsel', title='Sales Before Price Increase')
+def update_chart(selected_region):
+    #filtering based on region
+    if selected_region == 'all':
+        sales_fig = px.line(sales_data, 
+                            x='Date', 
+                            y='Total Sale of Morsel', 
+                            title='Total Sales Data')
     else:
-        sales_fig = px.line(sales_after_increase, x='Date', y='Total Sale of Morsel', title='Sales After Price Increase')
+        filtered_sales_data = sales_data[sales_data['Region'] == selected_region]
+        sales_fig = px.line(filtered_sales_data, 
+                            x='Date', 
+                            y='Total Sale of Morsel', 
+                            title=f'Sales Data for {selected_region.capitalize()} Region')
+    
+    sales_fig.update_layout(
+        plot_bgcolor='black',  # Background color of the plot area
+        paper_bgcolor='black',  # Background color of the entire chart including legend and margins
+        font=dict(color='#4f08c2', family='monospace' , size=17)
+    )
+    
     return sales_fig
 
 if __name__ == '__main__':
