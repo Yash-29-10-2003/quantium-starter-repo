@@ -17,6 +17,7 @@ app.layout = html.Div(
            'justify-content': 'center'},  
     children=[
         html.H1("Sales Data Visualization", 
+                id="sales-header",
                 style={'color': '#4f08c2', 
                        'font-size': '44px', 
                        'font-family': 'monospace' ,
